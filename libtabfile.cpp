@@ -19,14 +19,16 @@ static int comparefunc(const void *a, const void *b){
     }
 }
 
-static bool read_tab_file(char *buffer, _worditem *array[]){
+static bool read_tab_file(char *buffer, _worditem *worditems[]){
     char *p, *p1, *p2; //p는 현재 읽고 있는 내용, p1은 읽을 위치
     p = buffer;
 
+    int i = 0;
     struct _worditem worditem;
     while(true){
         if(*p == '\0'){
             printf("Conversion is over.\n");
+            break;
         }
         p1 = strchr(p, '\n');   //p가 가리키는 내용중 줄의 끝 표시가 나오는 위치를 p1에 저장한다.
         *p1 = '\0';             //p1이 가리키는 위치의 내용, 즉 p에서 줄의 끝 표시 대신에 문장의 끝 표시를 한다.
@@ -36,19 +38,25 @@ static bool read_tab_file(char *buffer, _worditem *array[]){
         p2++;
         worditem.word = p;      //결국 p는 '\0'으로 끝나는 word만 남는다.
         worditem.definition = p2;   //p2위치에서 '\0'으로 끝나기까지는 definition이 된다.
-
+        memcpy(worditems[i],&worditem,sizeof(struct _worditem));
+        printf("word(%i): %s\n", i, worditems[i]->word);
+        printf("definition(%i): %s\n", i, worditems[i]->definition);
+        i++;
+        p = p1;
     }
+    return true;
 }
 
 void convert_tabfile(const char *filename){
     QFile file;
     file.setFileName(filename);
-    _worditem *array[];
-    array = (_worditem*)malloc(sizeof(_worditem)*100);
+    _worditem *array;
+    array = (_worditem *)malloc(sizeof(_worditem)*100);
     if(file.open(QIODevice::ReadOnly | QIODevice::Text))
     {
         char *buf = file.readAll().data();
-        read_tab_file(buf, array);
+        read_tab_file(buf, &array);
         file.close();
     }
+    free(array);
 }
