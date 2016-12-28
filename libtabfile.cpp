@@ -7,12 +7,14 @@
 
 #define MAX_STR_LEN 4000
 
+//사전 자료구조
 struct _worditem
 {
     char *word;
     char *definition;
 };
 
+//정렬함수
 static int comparefunc(const void *a, const void *b){
     int x;
     //a.word가 b.word보다 크면 +, a.word가 b.word보다 작으면 -, a.word가 b.word와 같으면 0을 반환한다
@@ -70,13 +72,16 @@ int trim (char *strOld)
         return strlen(strOld);
 }
 
+//word, title 분리함수
 static bool read_tab_file(char *buffer, struct _worditem *worditems[]){
     char *p, *p1, *p2; //p는 현재 읽고 있는 내용, p1은 읽을 위치
     p = buffer;
 
-    int linenum = 0;
+    //utf-8 검증
+
 
     struct _worditem worditem;
+    int linenum = 0;
 
     while(true){
         if(*p == '\0'){
@@ -105,17 +110,45 @@ static bool read_tab_file(char *buffer, struct _worditem *worditems[]){
     return true;
 }
 
+//파일에 쓰기
+static bool write_dictionary(const char *filename, struct _worditem *worditems[]){
+    char *basefilename = "CyDic";
+    char *dirname = "C:/QtProjects/";
+
+    const std::string ifofilename = fullbasefilename + ".ifo";
+    const std::string idxfilename = fullbasefilename + ".idx";
+    const std::string dicfilename = fullbasefilename + ".dict";
+
+    QFile ifofile;
+    ifofile.open(QIODevice::WriteOnly||QIODevice::Text);
+
+    QFile idxfile;
+    idxfile.open(QIODevice::WriteOnly||QIODevice::Text);
+
+    QFile dicfile;
+    dicfile.open(QIODevice::WriteOnly||QIODevice::Text);
+
+    int offset_old;
+    int tmpglong;
+    struct _worditem *pworditem;
+    int definition_len;
+    int i;
+    for(i=0; i<worditems[])
+}
+
+//메인함수(파일을 읽고 word, definition을 분리하고 파일에 담는다)
 void convert_tabfile(const char *filename){
     QFile file;
     file.setFileName(filename);
 
+    //저장공간 생성
     struct _worditem *array[5];
     for(int i = 0; i<sizeof(array)/sizeof(struct _worditem *); i++){
         array[i] = (struct _worditem *)malloc(sizeof(struct _worditem));
         memset(array[i],0,sizeof(struct _worditem));
     }
 
-
+    //파일을 열어 외부함수를 불러 처리하는 메인로직
     if(file.open(QIODevice::ReadOnly | QIODevice::Text))
     {
         char *buf = file.readAll().data();
@@ -127,10 +160,10 @@ void convert_tabfile(const char *filename){
         for(int i=0; i<sizeof(array)/sizeof(struct _worditem *);i++){
             printf("item[%d].word: %s\n", i, array[i]->word);
             printf("item[%d].definition: %s\n", i, array[i]->definition);
-        }
-
+        }    
     }
 
+    //메모리 해제
     for(int i = 0; i<sizeof(array)/sizeof(struct _worditem *); i++){
         free(array[i]);
     }
