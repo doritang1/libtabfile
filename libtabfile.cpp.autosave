@@ -103,23 +103,21 @@ static bool read_tab_file(char *buffer, struct _worditem *worditems[]){
 void convert_tabfile(const char *filename){
     QFile file;
     file.setFileName(filename);
-//    struct _worditem *array[8];
-
-//    for(int i = 0; i<sizeof(array)/sizeof(struct _worditem *); i++){
-//        array[i] = (struct _worditem *)malloc(sizeof(struct _worditem));
-//    }
-    struct _worditem *array;
-    array = (struct _worditem *)malloc(sizeof(struct _worditem)*8);
+    
+    struct _worditem *array[8];
+    for(int i = 0; i<sizeof(array)/sizeof(struct _worditem *); i++){
+        array[i] = (struct _worditem *)malloc(sizeof(struct _worditem));
+    }
 
 
     if(file.open(QIODevice::ReadOnly | QIODevice::Text))
     {
         char *buf = file.readAll().data();
-        read_tab_file(buf, &array);
+        read_tab_file(buf, array);
         file.close();
     }
 
-    for(int i = 0; i<sizeof(&array)/sizeof(struct _worditem *); i++){
-        free(&array[i]);
+    for(int i = 0; i<sizeof(array)/sizeof(struct _worditem *); i++){
+        free(array[i]);
     }
 }
