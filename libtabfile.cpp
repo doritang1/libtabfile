@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <string.h>
+#include <stdlib.h>
 #include <QFile>
 #include "libtabfile.h"
 #include "qdebug.h"
@@ -15,7 +16,9 @@ struct _worditem
 static int comparefunc(const void *a, const void *b){
     int x;
     //a.word가 b.word보다 크면 +, a.word가 b.word보다 작으면 -, a.word가 b.word와 같으면 0을 반환한다
-    x = strcmp(((struct _worditem *)a)->word, ((struct _worditem *)b)->word);
+    //x = strcmp(((**(struct _worditem **)a).word), ((**(struct _worditem **)b).word));
+    x = strcmp((**(struct _worditem **)a).word, (**(struct _worditem **)b).word);
+    printf("a: %d\n", x);
     //만약 반환값이 0이면, 즉 a.word와 b.word가 같으면
     //그것이 가리키는 definition주소값이 같은지, 즉 같은 definition을 가리키고 있는지 검사한다.
     if(x==0){
@@ -106,7 +109,7 @@ void convert_tabfile(const char *filename){
     QFile file;
     file.setFileName(filename);
 
-    struct _worditem *array[100];
+    struct _worditem *array[5];
     for(int i = 0; i<sizeof(array)/sizeof(struct _worditem *); i++){
         array[i] = (struct _worditem *)malloc(sizeof(struct _worditem));
         memset(array[i],0,sizeof(struct _worditem));
@@ -119,8 +122,8 @@ void convert_tabfile(const char *filename){
         read_tab_file(buf, array);
         file.close();
 
-        qsort(array,100,sizeof(_worditem *),comparefunc);
-        //qsort(array,sizeof(array)/sizeof(_worditem *),sizeof(_worditem *),comparefunc);
+        //qsort(array,100,sizeof(_worditem *),comparefunc);
+        qsort(array,sizeof(array)/sizeof(_worditem *),sizeof(_worditem *),comparefunc);
         for(int i=0; i<sizeof(array)/sizeof(struct _worditem *);i++){
             printf("item[%d].word: %s\n", i, array[i]->word);
             printf("item[%d].definition: %s\n", i, array[i]->definition);
