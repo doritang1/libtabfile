@@ -16,19 +16,28 @@ struct _worditem
 
 //정렬함수
 static int comparefunc(const void *a, const void *b){
-    int x;
-    //a.word가 b.word보다 크면 +, a.word가 b.word보다 작으면 -, a.word가 b.word와 같으면 0을 반환한다
-    //x = strcmp(((**(struct _worditem **)a).word), ((**(struct _worditem **)b).word));
-    x = strcmp((**(struct _worditem **)a).word, (**(struct _worditem **)b).word);
-    printf("a: %d\n", x);
-    //만약 반환값이 0이면, 즉 a.word와 b.word가 같으면
-    //그것이 가리키는 definition주소값이 같은지, 즉 같은 definition을 가리키고 있는지 검사한다.
-    if(x==0){
-        //definition의 주소가 다르다면 a와 b는 다른 데이터이므로 +나 -를 반환하고
-        //definition의 주소가 같다면 a와 b는 정확히 같은 데이터이므로 0을 반환한다.
-        return ((struct _worditem*)a)->definition - ((struct _worditem*)b)->definition;
+    if((**(struct _worditem **)a).word && (**(struct _worditem **)b).word){
+        int x;
+        //a.word가 b.word보다 크면 +, a.word가 b.word보다 작으면 -, a.word가 b.word와 같으면 0을 반환한다
+        x = strcmp((**(struct _worditem **)a).word, (**(struct _worditem **)b).word);
+        //만약 반환값이 0이면, 즉 a.word와 b.word가 같으면
+        //그것이 가리키는 definition주소값이 같은지, 즉 같은 definition을 가리키고 있는지 검사한다.
+        if(x==0){
+            //definition의 주소가 다르다면 a와 b는 다른 데이터이므로 +나 -를 반환하고
+            //definition의 주소가 같다면 a와 b는 정확히 같은 데이터이므로 0을 반환한다.
+            return ((struct _worditem*)a)->definition - ((struct _worditem*)b)->definition;
+        }else{
+            return x;
+        }
+    }else if((**(struct _worditem **)a).word != 0 && (**(struct _worditem **)b).word == 0){
+        //printf("1\n");
+        return -1;
+    }else if((**(struct _worditem **)a).word == 0 && (**(struct _worditem **)b).word != 0){
+        //printf("-1\n");
+        return 1;
     }else{
-        return x;
+        //printf("0\n");
+        return 0;
     }
 }
 
@@ -81,7 +90,7 @@ static bool read_tab_file(char *buffer, struct _worditem *worditems[]){
 
 
     struct _worditem worditem;
-    int linenum = 0;
+    int articlenum = 0;
 
     while(true){
         if(*p == '\0'){
@@ -98,42 +107,16 @@ static bool read_tab_file(char *buffer, struct _worditem *worditems[]){
 
         worditem.word = p;      //결국 p는 '\0'으로 끝나는 word만 남는다.
         worditem.definition = p2;   //p2위치에서 '\0'으로 끝나기까지는 definition이 된다.
-        memcpy(worditems[linenum],&worditem,sizeof(struct _worditem)); //worditem의 내용을 _worditem의 길이만큼 읽음
+        memcpy(worditems[articlenum],&worditem,sizeof(struct _worditem)); //worditem의 내용을 _worditem의 길이만큼 읽음
 
         //        바로 위 3줄과 같은 내용이다.
         //        worditems[i]->word = p;
         //        worditems[i]->definition = p2;
 
         p = p1;
-        linenum++;
+        articlenum++;
     }
     return true;
-}
-
-//파일에 쓰기
-static bool write_dictionary(const char *filename, struct _worditem *worditems[]){
-    char *basefilename = "CyDic";
-    char *dirname = "C:/QtProjects/";
-
-    const std::string ifofilename = fullbasefilename + ".ifo";
-    const std::string idxfilename = fullbasefilename + ".idx";
-    const std::string dicfilename = fullbasefilename + ".dict";
-
-    QFile ifofile;
-    ifofile.open(QIODevice::WriteOnly||QIODevice::Text);
-
-    QFile idxfile;
-    idxfile.open(QIODevice::WriteOnly||QIODevice::Text);
-
-    QFile dicfile;
-    dicfile.open(QIODevice::WriteOnly||QIODevice::Text);
-
-    int offset_old;
-    int tmpglong;
-    struct _worditem *pworditem;
-    int definition_len;
-    int i;
-    for(i=0; i<worditems[])
 }
 
 //메인함수(파일을 읽고 word, definition을 분리하고 파일에 담는다)
@@ -142,7 +125,7 @@ void convert_tabfile(const char *filename){
     file.setFileName(filename);
 
     //저장공간 생성
-    struct _worditem *array[5];
+    struct _worditem *array[149];
     for(int i = 0; i<sizeof(array)/sizeof(struct _worditem *); i++){
         array[i] = (struct _worditem *)malloc(sizeof(struct _worditem));
         memset(array[i],0,sizeof(struct _worditem));
