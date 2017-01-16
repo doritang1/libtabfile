@@ -1,7 +1,6 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
-#include <QFile>
 #include "libtabfile.h"
 #include "qdebug.h"
 
@@ -18,7 +17,7 @@ struct _worditem
 static int comparefunc(const void *a, const void *b){
     if((**(struct _worditem **)a).word && (**(struct _worditem **)b).word){
         int x;
-        //a.word가 b.word보다 크면 +, a.word가 b.word보다 작으면 -, a.word가 b.word와 같으면 0을 반환한다
+        //a.word가 b.word보다 앞이면 -, a.word가 b.word보다 뒤면 +, a.word가 b.word와 같으면 0을 반환한다
         x = strcmp((**(struct _worditem **)a).word, (**(struct _worditem **)b).word);
         //만약 반환값이 0이면, 즉 a.word와 b.word가 같으면
         //그것이 가리키는 definition주소값이 같은지, 즉 같은 definition을 가리키고 있는지 검사한다.
@@ -29,14 +28,14 @@ static int comparefunc(const void *a, const void *b){
         }else{
             return x;
         }
+     //a가 NULL이 아니고 b가 NULL인 경우
     }else if((**(struct _worditem **)a).word != 0 && (**(struct _worditem **)b).word == 0){
-        //printf("1\n");
         return -1;
+     //a가 NULL이고 b가 NULL이 아닌 경우
     }else if((**(struct _worditem **)a).word == 0 && (**(struct _worditem **)b).word != 0){
-        //printf("-1\n");
         return 1;
+     //a가 NULL이고 b도 NULL인 경우
     }else{
-        //printf("0\n");
         return 0;
     }
 }
@@ -121,9 +120,6 @@ static bool read_tab_file(char *buffer, struct _worditem *worditems[]){
 
 //메인함수(파일을 읽고 word, definition을 분리하고 파일에 담는다)
 void convert_tabfile(const char *filename){
-    QFile file;
-    file.setFileName(filename);
-
     //저장공간 생성
     struct _worditem *array[149];
     for(int i = 0; i<sizeof(array)/sizeof(struct _worditem *); i++){
@@ -131,23 +127,28 @@ void convert_tabfile(const char *filename){
         memset(array[i],0,sizeof(struct _worditem));
     }
 
+    FILE *file;
+    file = fopen(filename, "r");
     //파일을 열어 외부함수를 불러 처리하는 메인로직
-    if(file.open(QIODevice::ReadOnly | QIODevice::Text))
+    if(file != NULL)
     {
-        char *buf = file.readAll().data();
-        read_tab_file(buf, array);
-        file.close();
+        char *buf = (char *)malloc(sizeof(180));
+        fgets(buf, 180, file);
+        puts(buf);
+//        read_tab_file(buf, array);
+        fclose(file);
 
-        //qsort(array,100,sizeof(_worditem *),comparefunc);
-        qsort(array,sizeof(array)/sizeof(_worditem *),sizeof(_worditem *),comparefunc);
-        for(int i=0; i<sizeof(array)/sizeof(struct _worditem *);i++){
-            printf("item[%d].word: %s\n", i, array[i]->word);
-            printf("item[%d].definition: %s\n", i, array[i]->definition);
-        }    
+//        //qsort(array,100,sizeof(_worditem *),comparefunc);
+//        qsort(array,sizeof(array)/sizeof(_worditem *),sizeof(_worditem *),comparefunc);
+//        for(int i=0; i<sizeof(array)/sizeof(struct _worditem *);i++){
+//            //system("cls");
+//            printf("item[%d].word: %s\n", i, array[i]->word);
+//            printf("item[%d].definition: %s\n", i, array[i]->definition);
+//        }
     }
 
-    //메모리 해제
-    for(int i = 0; i<sizeof(array)/sizeof(struct _worditem *); i++){
-        free(array[i]);
-    }
+//    //메모리 해제
+//    for(int i = 0; i<sizeof(array)/sizeof(struct _worditem *); i++){
+//        free(array[i]);
+//    }
 }
