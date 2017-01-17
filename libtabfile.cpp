@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include "libtabfile.h"
 #include "qdebug.h"
+#include <QFile>
 
 #define MAX_STR_LEN 4000
 
@@ -120,6 +121,31 @@ static bool read_tab_file(char *buffer, struct _worditem *worditems[]){
 
 //메인함수(파일을 읽고 word, definition을 분리하고 파일에 담는다)
 void convert_tabfile(const char *filename){
+    QFile tabfile;
+    FILE *idxfile;
+    FILE *dictfile;
+    FILE *ifofile;
+
+    char tabfilename[30] = {0, };
+    char idxfilename[30] = {0, };
+    char dictfilename[30] = {0, };
+    char ifofilename[30] = {0, };
+
+    strcpy(tabfilename,filename);
+    strcpy(idxfilename, filename);
+    strcpy(dictfilename, filename);
+    strcpy(ifofilename, filename);
+
+    char extention[6] = ".txt";
+    strcat(tabfilename, extention);
+    strcpy(extention,".idx");
+    strcat(idxfilename, extention);
+    strcpy(extention, ".dict");
+    strcat(dictfilename, extention);
+    strcpy(extention, ".ifo");
+    strcat(ifofilename, extention);
+
+    tabfile.setFileName(tabfilename);
     //저장공간 생성
     struct _worditem *array[149];
     for(int i = 0; i<sizeof(array)/sizeof(struct _worditem *); i++){
@@ -127,28 +153,40 @@ void convert_tabfile(const char *filename){
         memset(array[i],0,sizeof(struct _worditem));
     }
 
-    FILE *file;
-    file = fopen(filename, "r");
-    //파일을 열어 외부함수를 불러 처리하는 메인로직
-    if(file != NULL)
-    {
-        char *buf = (char *)malloc(sizeof(180));
-        fgets(buf, 180, file);
-        puts(buf);
-//        read_tab_file(buf, array);
-        fclose(file);
+//    //FILE *file;
+//    //file = fopen(filename, "r");
+//    //파일을 열어 외부함수를 불러 처리하는 메인로직
+//    //if(file != NULL)
 
-//        //qsort(array,100,sizeof(_worditem *),comparefunc);
-//        qsort(array,sizeof(array)/sizeof(_worditem *),sizeof(_worditem *),comparefunc);
-//        for(int i=0; i<sizeof(array)/sizeof(struct _worditem *);i++){
-//            //system("cls");
-//            printf("item[%d].word: %s\n", i, array[i]->word);
-//            printf("item[%d].definition: %s\n", i, array[i]->definition);
-//        }
+    if(tabfile.open(QIODevice::ReadOnly | QIODevice::Text))
+    {
+//        char *buf = (char *)malloc(sizeof(180));
+//        fgets(buf, 180, file);
+//        puts(buf);
+//        read_tab_file(buf, array);
+//        fclose(file);
+
+        char *buf = tabfile.readAll().data();
+        read_tab_file(buf, array);
+        tabfile.close();
+
+        idxfile = fopen(idxfilename, "wb");
+        dictfile = fopen(dictfilename, "w");
+        ifofile = fopen(ifofilename, "w");
+        if(idxfile && dictfile && ifofile)
+        {
+            //qsort(array,100,sizeof(_worditem *),comparefunc);
+            qsort(array,sizeof(array)/sizeof(_worditem *),sizeof(_worditem *),comparefunc);
+            for(int i=0; i<sizeof(array)/sizeof(struct _worditem *);i++){
+                //system("cls");
+                printf("array[%d]->word: %s\n", i, array[i]->word);
+                printf("array[%d]->definition: %s\n", i, array[i]->definition);
+            }
+        }
     }
 
-//    //메모리 해제
-//    for(int i = 0; i<sizeof(array)/sizeof(struct _worditem *); i++){
-//        free(array[i]);
-//    }
+    //메모리 해제
+    for(int i = 0; i<sizeof(array)/sizeof(struct _worditem *); i++){
+        free(array[i]);
+    }
 }
